@@ -1,6 +1,7 @@
 import random
 import sys
 import time
+from multiprocessing import Pool, Process, Value, Queue
 
 __author__ = 'Nilson'
 
@@ -23,10 +24,6 @@ se d[k-1][i][j] > d[k-1][i][k] + d[k-1][k][j], então pi[k][i][j] = pi[k-1][k][j
 """
 
 
-weights = []
-dist = []
-
-
 def weight_serial(size):
     # Declaring
     myw = []
@@ -45,7 +42,7 @@ def weight_serial(size):
     return myw
 
 
-def pi_start_serial(size):
+def pi_start_serial(weights, size):
     d = []
 
     dd = []
@@ -64,7 +61,7 @@ def pi_start_serial(size):
     return d
 
 
-def dist_serial(size):
+def dist_serial(weights, size):
     d = list(weights)
     for k in range(1, size):
         dd = []
@@ -80,8 +77,8 @@ def dist_serial(size):
     return d
 
 
-def pi_serial(size):
-    d = list(pi_start_serial(size))
+def pi_serial(weights, size):
+    d = list(pi_start_serial(weights, size))
 
     for k in range(1, size):
         dd = []
@@ -98,54 +95,67 @@ def pi_serial(size):
     return d
 
 
-def min_serial(dd, i, j, k):
-    return min(dd[i][j], dd[i][k] + dd[k][j])
-
-
-def floyd_serial(size):
-    p = pi_serial(size)
+def floyd_serial(weights, size):
+    d = dist_serial(weights, size)
+    p = pi_serial(weights, size)
 
     for k in range(1, size):
         for i in range(size):
             for j in range(size):
-
-                dist[k][i][j] = min(dist[k-1][i][j], dist[k-1][i][k] + dist[k-1][k][j])
-                if dist[k-1][i][j] <= dist[k-1][i][k] + dist[k-1][k][j]:
+                d[k][i][j] = min(d[k-1][i][j], d[k-1][i][k] + d[k-1][k][j])
+                if d[k-1][i][j] <= d[k-1][i][k] + d[k-1][k][j]:
                     p[k][i][j] = p[k-1][i][j]
                 else:
                     p[k][i][j] = p[k-1][k][j]
 
-    return dist, p
+    return d, p
 
 
-def floyd_parallel(size):
-    p = pi_serial(size)
+def min_p_parallel(d, p, i, j, k, numd, nump):
+    numd.value = min(d[i][j], d[i][k] + d[k][j])
+    if d[i][j] <= d[i][k] + d[k][j]:
+        nump.put(p[i][j])
+    else:
+        nump.put(p[k][j])
+
+
+def floyd_parallel(weights, size):
+    d = dist_serial(weights, size)
+    p = pi_serial(weights, size)
 
     for k in range(1, size):
         for i in range(size):
             for j in range(size):
-                dist[k][i][j] = min(dist[k-1][i][j], dist[k-1][i][k] + dist[k-1][k][j])
-                if dist[k-1][i][j] <= dist[k-1][i][k] + dist[k-1][k][j]:
-                    p[k][i][j] = p[k-1][i][j]
-                else:
-                    p[k][i][j] = p[k-1][k][j]
+                numd = Value('d', 0.0)
+                nump = Queue()
+                u = Process(target=min_p_parallel, args=(d[k-1], p[k-1], i, j, k, numd, nump,))
+                u.start()
+                u.join()
+                d[k][i][j] = numd
+                p[k][i][j] = nump.get()
 
-    return p
+    return d, p
 
 
 if __name__ == "__main__":
     n = 10000
-    weights = list(weight_serial(n))
-    dist = list(dist_serial(n))
 
     fis = open('serial.txt', 'a')
     fip = open('parallel.txt', 'a')
 
-    for n in [10, 100, 1000, 10000]:
+    for n in [10, 100]:
+        w = weight_serial(n)
+
         start = time.process_time()
-        pi = floyd_serial(n)
+        dist, pi = floyd_serial(w, n)
         end = time.process_time()
         fis.write('For %s: Elapsed time: %ss\n' % (n, str(end-start)))
+        print('For %s: Elapsed time: %ss' % (n, str(end-start)))
+
+        start = time.process_time()
+        dist, pi = floyd_parallel(w, n)
+        end = time.process_time()
+        fip.write('For %s: Elapsed time: %ss\n' % (n, str(end-start)))
         print('For %s: Elapsed time: %ss' % (n, str(end-start)))
 
     # print(dist)
