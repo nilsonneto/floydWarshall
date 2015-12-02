@@ -23,7 +23,11 @@ se d[k-1][i][j] > d[k-1][i][k] + d[k-1][k][j], então pi[k][i][j] = pi[k-1][k][j
 """
 
 
-def build_weight(size):
+weights = []
+dist = []
+
+
+def weight_serial(size):
     # Declaring
     myw = []
 
@@ -41,7 +45,7 @@ def build_weight(size):
     return myw
 
 
-def build_pi_start(weights, size):
+def pi_start_serial(size):
     d = []
 
     dd = []
@@ -60,7 +64,7 @@ def build_pi_start(weights, size):
     return d
 
 
-def build_dist(weights, size):
+def dist_serial(size):
     d = list(weights)
     for k in range(1, size):
         dd = []
@@ -76,8 +80,8 @@ def build_dist(weights, size):
     return d
 
 
-def build_pi(weights, size):
-    d = list(build_pi_start(weights, size))
+def pi_serial(size):
+    d = list(pi_start_serial(size))
 
     for k in range(1, size):
         dd = []
@@ -94,28 +98,55 @@ def build_pi(weights, size):
     return d
 
 
-def floydSerial(weights, size):
-    d = build_dist(weights, size)
-    p = build_pi(weights, size)
+def min_serial(dd, i, j, k):
+    return min(dd[i][j], dd[i][k] + dd[k][j])
+
+
+def floyd_serial(size):
+    p = pi_serial(size)
 
     for k in range(1, size):
         for i in range(size):
             for j in range(size):
-                d[k][i][j] = min(d[k-1][i][j], d[k-1][i][k] + d[k-1][k][j])
-                if d[k-1][i][j] <= d[k-1][i][k] + d[k-1][k][j]:
+
+                dist[k][i][j] = min(dist[k-1][i][j], dist[k-1][i][k] + dist[k-1][k][j])
+                if dist[k-1][i][j] <= dist[k-1][i][k] + dist[k-1][k][j]:
                     p[k][i][j] = p[k-1][i][j]
                 else:
                     p[k][i][j] = p[k-1][k][j]
 
-    return d, p
+    return dist, p
+
+
+def floyd_parallel(size):
+    p = pi_serial(size)
+
+    for k in range(1, size):
+        for i in range(size):
+            for j in range(size):
+                dist[k][i][j] = min(dist[k-1][i][j], dist[k-1][i][k] + dist[k-1][k][j])
+                if dist[k-1][i][j] <= dist[k-1][i][k] + dist[k-1][k][j]:
+                    p[k][i][j] = p[k-1][i][j]
+                else:
+                    p[k][i][j] = p[k-1][k][j]
+
+    return p
 
 
 if __name__ == "__main__":
     n = 10000
-    start = time.process_time()
-    w = build_weight(n)
-    # dist, pi = floydSerial(w, n)
-    end = time.process_time()
+    weights = list(weight_serial(n))
+    dist = list(dist_serial(n))
+
+    fis = open('serial.txt', 'a')
+    fip = open('parallel.txt', 'a')
+
+    for n in [10, 100, 1000, 10000]:
+        start = time.process_time()
+        pi = floyd_serial(n)
+        end = time.process_time()
+        fis.write('For %s: Elapsed time: %ss\n' % (n, str(end-start)))
+        print('For %s: Elapsed time: %ss' % (n, str(end-start)))
+
     # print(dist)
     # print(pi)
-    print('Elapsed time: %ss' % str(end-start))
