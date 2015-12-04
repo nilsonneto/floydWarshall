@@ -136,12 +136,11 @@ def floyd_parallel(weights, size):
 
 
 if __name__ == "__main__":
-    n = 10000
-
     fis = open('serial.txt', 'a')
     fip = open('parallel.txt', 'a')
 
-    for n in [1 * numThreads, 10 * numThreads, 100 * numThreads]:
+    global numThreads
+    for n in range(24, 460, 24):
         w = weight_serial(n)
 
         start = time.process_time()
@@ -150,14 +149,15 @@ if __name__ == "__main__":
         fis.write('For %s: Elapsed time: %ss\n' % (n, str(end-start)))
         print('S: For %s: Elapsed time: %ss' % (n, str(end-start)))
 
-        start = time.process_time()
-        dp, pp = floyd_parallel(w, n)
-        end = time.process_time()
-        fip.write('For %s: Elapsed time: %ss\n' % (n, str(end-start)))
-        print('P: For %s: Elapsed time: %ss' % (n, str(end - start)))
+        for numThreads in [1, 2, 3, 4, 6, 8]:
+            start = time.process_time()
+            dp, pp = floyd_parallel(w, n)
+            end = time.process_time()
+            fip.write('For %s with %s threads: Elapsed time: %ss\n' % (n, numThreads, str(end-start)))
+            print('P: For %s with %s threads: Elapsed time: %ss' % (n, numThreads, str(end-start)))
 
-        print('Same dist matrix: %s' % (dp == ds))
-        print('Same pi matrix: %s' % (pp == ps))
+            print('Same dist matrix: %s' % (dp == ds))
+            print('Same pi matrix: %s' % (pp == ps))
 
-        # print(dist)
-        # print(pi)
+                # print(dist)
+                # print(pi)
