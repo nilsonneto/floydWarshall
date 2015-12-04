@@ -1,0 +1,15 @@
+For 10: Elapsed time: 1.15991394s
+For 10: Elapsed time: 1.120975428s
+For 10: Elapsed time: 0.18799193400000003s
+For 10: Elapsed time: 0.22499638400000005s
+For 40: Elapsed time: 4.159666264999999s
+For 40: Elapsed time: 4.940143248s
+For 40: Elapsed time: 1.380270243s
+For 40: Elapsed time: 1.3668887730000001s
+For 40: Elapsed time: 1.291583411s
+For 40: Elapsed time: 0.31755747000000006s
+For 40: Elapsed time: 0.10189411300000001s
+For 40: Elapsed time: 0.09445134799999999s
+For 40: Elapsed time: 0.09686745299999999s
+For 40: Elapsed time: 0.092584781s
+For 400: Elapsed time: 54.37168118199999s
