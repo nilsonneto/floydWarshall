@@ -22,3 +22,4 @@ For 400: Elapsed time: 1.3020000000363297e-06s
 For 40: Elapsed time: 0.09710842100000001s
 For 40: Elapsed time: 0.09082129900000002s
 For 400: Elapsed time: 91.23981978s
+For 4: Elapsed time: 8.16000000000705e-07s
